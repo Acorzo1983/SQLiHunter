@@ -56,7 +56,7 @@ SQLi Hunter is a tool designed to find potential SQL injection vulnerabilities b
 
 6. **Run with proxychains and combined with sqlmap:**
     ```sh
-   proxychains subfinder -d testphp.vulnweb.com -all -silent | proxychains python3 sqlihunter.py -o sqliurls.txt -r 1 --use-proxychains; sqlmap -m sqliurls.txt --batch --dbs --risk 2 --level 5 --random-agent | tee -a sqli.txt
+   proxychains subfinder -d testphp.vulnweb.com -all -silent | proxychains python3 sqlihunter.py -o sqliurls.txt -r 1 --use-proxychains ; sqlmap -m sqliurls.txt --batch --dbs --risk 2 --level 5 --random-agent | tee -a sqli.txt
     ```
 
 ## Disclaimer
