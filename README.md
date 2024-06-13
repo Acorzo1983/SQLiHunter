@@ -12,7 +12,7 @@ SQLi Hunter is a tool designed to find potential SQL injection vulnerabilities b
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/sqlihunter.git
+    git clone https://github.com/Acorzo1983/SQLiHunter.git
     cd sqlihunter
     ```
 
