@@ -16,7 +16,6 @@ SQLiHunter is a tool designed to identify SQL Injection (SQLi) vulnerabilities i
 ## Requirements  
 - **Python 3**  
 - **cURL**  
-- **sqlmap** ([Installation Guide](#installing-sqlmap))  
 
 ---
 
