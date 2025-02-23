@@ -34,7 +34,7 @@ pip install colorama
 Installation
 Run this one-liner to install SQLiHunter globally:
 ```bash
-git clone https://github.com/Acorzo1983/SQLiHunter.git && cd sqlifinder && chmod +x sqlihunter.py && sudo ln -s $(pwd)/sqlihunter.py /usr/local/bin/sqlihunter
+git clone https://github.com/Acorzo1983/SQLiHunter.git && cd SQLiHunter && chmod +x sqlihunter.py && sudo ln -s $(pwd)/sqlihunter.py /usr/local/bin/sqlihunter
 ```
 
 ## This will:
