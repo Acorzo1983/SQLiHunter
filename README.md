@@ -34,7 +34,7 @@ pip install colorama
 Installation
 Run this one-liner to install SQLiHunter globally:
 ```bash
-git clone https://github.com/tuusuario/sqlifinder.git && cd sqlifinder && chmod +x sqlihunter.py && sudo ln -s $(pwd)/sqlihunter.py /usr/local/bin/sqlihunter
+git clone https://github.com/Acorzo1983/SQLiHunter.git && cd sqlifinder && chmod +x sqlihunter.py && sudo ln -s $(pwd)/sqlihunter.py /usr/local/bin/sqlihunter
 ```
 
 ## This will:
@@ -76,27 +76,6 @@ Argument	Description
 -d, --domain	Specify a single domain to scan.
 -l, --list	Specify a text file containing a list of domains.
 -o, --output	Set the output directory (default: ./output).
-```
-Example Output
-```bash
-
-============================================
-         SQLiHunter Tool
-   made with ❤ by Albert C @yz9yt
-             Version 1.0
-============================================
-
-2025-02-23 16:01:24,177 - INFO - Fetching URLs for saas.aiwriter.fi from Wayback Machine...
-2025-02-23 16:01:30,628 - INFO - Fetched 101 URLs for saas.aiwriter.fi.
-2025-02-23 16:01:30,629 - INFO - Wrote 101 raw URLs to output_saas.aiwriter.fi_1740344484177/raw_urls.txt.
-2025-02-23 16:01:30,630 - INFO - Wrote 16 cleaned URLs to output_saas.aiwriter.fi_1740344484177/cleaned_urls.txt.
-2025-02-23 16:01:30,630 - INFO - SQLMap Command for saas.aiwriter.fi:
-sqlmap -m output_saas.aiwriter.fi_1740344484177/cleaned_urls.txt --batch --level 5 --risk 3 --dbs
-
-SQLMap command suggestion:
-sqlmap -m output_saas.aiwriter.fi_1740344484177/cleaned_urls.txt --batch --level 5 --risk 3 --dbs
-
-Do you want to run sqlmap with the above command? (Y/N) [Y]:
 ```
 
 ## Contributing
