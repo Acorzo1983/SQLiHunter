@@ -1,3 +1,3 @@
 requests
-tqdm
+beautifulsoup4
 colorama
