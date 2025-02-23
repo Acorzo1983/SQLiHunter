@@ -56,6 +56,8 @@ def clean_urls(urls):
 
 def write_urls_to_file(urls, output_dir, file_name):
     """Writes the list of URLs to the specified file."""
+    # Ensure the directory exists before writing to the file
+    os.makedirs(output_dir, exist_ok=True)
     with open(os.path.join(output_dir, file_name), 'w') as file:
         for url in urls:
             file.write(url + '\n')
@@ -75,12 +77,16 @@ def process_domains_from_list(domains_list, output_dir):
         # Add all raw URLs for this domain to the list
         all_raw_urls.extend(urls)
 
+        # Create a subdirectory for the domain
+        domain_output_dir = os.path.join(output_dir, domain)
+        os.makedirs(domain_output_dir, exist_ok=True)
+
         # Write raw URLs to file
-        write_urls_to_file(urls, output_dir, f'{domain}_raw_urls.txt')
+        write_urls_to_file(urls, domain_output_dir, f'{domain}_raw_urls.txt')
 
         # Clean the URLs and write them to file
         cleaned_urls = clean_urls(urls)
-        write_urls_to_file(cleaned_urls, output_dir, f'{domain}_cleaned_urls.txt')
+        write_urls_to_file(cleaned_urls, domain_output_dir, f'{domain}_cleaned_urls.txt')
 
         logging.info(f"Wrote {len(urls)} raw URLs to {domain}_raw_urls.txt.")
         logging.info(f"Wrote {len(cleaned_urls)} cleaned URLs to {domain}_cleaned_urls.txt.")
