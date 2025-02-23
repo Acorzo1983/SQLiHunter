@@ -55,10 +55,48 @@ def fetch_urls_from_wayback_with_retries(domain, max_retries=3, delay=5):
     logging.error(f"Failed to fetch URLs for {domain} after {max_retries} attempts.")
     return []
 
-def clean_urls(urls):
-    """Cleans the URLs by filtering out duplicates and suspicious ones."""
-    clean_urls = set(urls)  # Remove duplicates
-    return [url for url in clean_urls if "?" in url]  # Filter for query strings
+def load_sqli_patterns(patterns_file='sqli.patterns'):
+    """Carga los patrones de inyección SQL desde el archivo sqli.patterns"""
+    if not os.path.exists(patterns_file):
+        logging.warning(f"{patterns_file} no encontrado. Creando el archivo con patrones básicos...")
+        # Crear el archivo sqli.patterns con patrones básicos
+        default_patterns = [
+            "id=", "select=", "report=", "role=", "update=", "query=", "user=",
+            "name=", "sort=", "where=", "search=", "params=", "process=", "row=",
+            "view=", "table=", "from=", "sel=", "results=", "sleep=", "fetch=",
+            "order=", "keyword=", "column=", "field=", "delete=", "string=",
+            "number=", "filter="
+        ]
+        with open(patterns_file, 'w') as file:
+            for pattern in default_patterns:
+                file.write(pattern + '\n')
+        logging.info(f"{patterns_file} creado con patrones básicos.")
+
+    # Leer los patrones desde el archivo
+    patterns = []
+    try:
+        with open(patterns_file, 'r') as file:
+            patterns = [line.strip().lower() for line in file.readlines() if line.strip()]
+    except Exception as e:
+        logging.error(f"Error al cargar los patrones desde {patterns_file}: {e}")
+        sys.exit(1)
+    return patterns
+
+def detect_sqli_in_url(url, patterns):
+    """Detecta inyecciones SQL en una URL buscando los patrones"""
+    for pattern in patterns:
+        if pattern in url.lower():
+            return True
+    return False
+
+def clean_urls(urls, patterns):
+    """Filtra las URLs que contienen parámetros sospechosos de SQLi"""
+    clean_urls = set(urls)  # Eliminar duplicados
+    suspicious_urls = []
+    for url in clean_urls:
+        if "?" in url and detect_sqli_in_url(url, patterns):
+            suspicious_urls.append(url)
+    return suspicious_urls
 
 def write_urls_to_file(urls, output_dir, file_name):
     """Writes the list of URLs to the specified file."""
@@ -71,6 +109,7 @@ def write_urls_to_file(urls, output_dir, file_name):
 def process_domains_from_list(domains_list, output_dir):
     """Process a list of domains and extract URLs."""
     all_raw_urls = []
+    patterns = load_sqli_patterns()  # Cargar patrones de SQLi
     for domain in domains_list:
         logging.info(f"Fetching URLs for {domain} from Wayback Machine...")
         urls = fetch_urls_from_wayback_with_retries(domain)
@@ -89,20 +128,20 @@ def process_domains_from_list(domains_list, output_dir):
         # Write raw URLs to file
         write_urls_to_file(urls, domain_output_dir, f'{domain}_raw_urls.txt')
 
-        # Clean the URLs and write them to file
-        cleaned_urls = clean_urls(urls)
-        write_urls_to_file(cleaned_urls, domain_output_dir, f'{domain}_cleaned_urls.txt')
+        # Clean the URLs (filter suspicious ones)
+        suspicious_urls = clean_urls(urls, patterns)
+        write_urls_to_file(suspicious_urls, domain_output_dir, f'{domain}_suspicious_urls.txt')
 
         logging.info(f"Wrote {len(urls)} raw URLs to {domain}_raw_urls.txt.")
-        logging.info(f"Wrote {len(cleaned_urls)} cleaned URLs to {domain}_cleaned_urls.txt.")
+        logging.info(f"Wrote {len(suspicious_urls)} suspicious URLs to {domain}_suspicious_urls.txt.")
 
     # Clean all URLs from all domains and write them to a single file
-    cleaned_all_urls = clean_urls(all_raw_urls)
-    write_urls_to_file(cleaned_all_urls, output_dir, 'all_cleaned_urls.txt')
-    logging.info(f"Total cleaned URLs from all domains written to all_cleaned_urls.txt.")
+    suspicious_all_urls = clean_urls(all_raw_urls, patterns)
+    write_urls_to_file(suspicious_all_urls, output_dir, 'all_suspicious_urls.txt')
+    logging.info(f"Total suspicious URLs from all domains written to all_suspicious_urls.txt.")
 
     # Generate SQLmap command for all domains
-    sqlmap_command = f"sqlmap -m {os.path.join(output_dir, 'all_cleaned_urls.txt')} --batch --level 5 --risk 3 --dbs"
+    sqlmap_command = f"sqlmap -m {os.path.join(output_dir, 'all_suspicious_urls.txt')} --batch --level 5 --risk 3 --dbs"
     logging.info(f"SQLMap Command for all domains:\n{sqlmap_command}")
     return sqlmap_command
 
