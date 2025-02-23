@@ -32,22 +32,28 @@ def create_output_directory(domain):
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
 
-def fetch_urls_from_wayback(domain):
-    """Fetches URLs from Wayback Machine using the cURL command."""
-    try:
-        result = subprocess.run(
-            ['curl', '-s', f'https://web.archive.org/cdx/search/cdx?url={domain}//*&output=txt&fl=original'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        output = result.stdout.decode('utf-8')
-        if result.returncode != 0:
-            logging.error(f"Error fetching URLs: {result.stderr.decode('utf-8')}")
-            sys.exit(1)
-        return output.splitlines()
-    except Exception as e:
-        logging.error(f"An error occurred while fetching URLs: {str(e)}")
-        sys.exit(1)
+def fetch_urls_from_wayback_with_retries(domain, max_retries=3, delay=5):
+    """Fetches URLs from Wayback Machine with retries in case of failure."""
+    attempt = 0
+    while attempt < max_retries:
+        try:
+            result = subprocess.run(
+                ['curl', '-s', f'https://web.archive.org/cdx/search/cdx?url={domain}//*&output=txt&fl=original'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            output = result.stdout.decode('utf-8')
+            if result.returncode != 0:
+                logging.error(f"Error fetching URLs: {result.stderr.decode('utf-8')}")
+                return []
+            return output.splitlines()
+        except Exception as e:
+            logging.error(f"Attempt {attempt+1} failed to fetch URLs for {domain}: {str(e)}")
+            time.sleep(delay)  # Wait before retrying
+            attempt += 1
+    
+    logging.error(f"Failed to fetch URLs for {domain} after {max_retries} attempts.")
+    return []
 
 def clean_urls(urls):
     """Cleans the URLs by filtering out duplicates and suspicious ones."""
@@ -67,13 +73,12 @@ def process_domains_from_list(domains_list, output_dir):
     all_raw_urls = []
     for domain in domains_list:
         logging.info(f"Fetching URLs for {domain} from Wayback Machine...")
-        urls = fetch_urls_from_wayback(domain)
+        urls = fetch_urls_from_wayback_with_retries(domain)
         if not urls:
             logging.warning(f"No URLs found for {domain} in Wayback Machine. Skipping domain.")
             continue
 
         logging.info(f"Fetched {len(urls)} URLs for {domain}.")
-
         # Add all raw URLs for this domain to the list
         all_raw_urls.extend(urls)
 
